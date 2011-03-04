@@ -6,12 +6,13 @@
  */
 
 abstract class Axcoto_Menu {
-
+    private static  $_configMenu = array();
     private $_menu = array();
     private $_name = null;
     private static $_instance = array();
 
-    private function __construct($name) {
+    private function __construct($name, $menu=array()) {
+        $this->_menu = $menu;
         $this->_name = $name;
     }
 
@@ -40,21 +41,22 @@ abstract class Axcoto_Menu {
      * @return Axcoto_Menu an instance of menu class for a specify menu
      */
     public static function factory($name) {
-        if (is_null(self::$_instance)) {
-            self::$_instance[$name] = new Menu($name);
+        self::$_configMenu = Kohana::config('menu');
+        if (empty(self::$_instance[$name])) {
+            self::$_instance[$name] = new Menu($name, empty(self::$_configMenu[$name])?  array():self::$_configMenu[$name]) ;
         }
-        return self::$_instance;
+        return self::$_instance[$name];
     }
 
-    public function render($name, $attr=null) {
+    public function render($attr=array()) {
         $_attr = array(
             'class' => '',
-            'id' => 'menu_' . time(),
+            'id' => 'menu_' . $this->_name
         );
-        $_attr = Arr::merge($_attr, $attr);
+        $_attr = Arr::overwrite($_attr, $attr);
         $currentUri = Request::current()->uri();
         $template = View::factory('menu/menu')
-                        ->set('menu' . $this->_menu)
+                        ->set('menu', $this->_menu)
                         ->set('attr', $_attr)
                         ->set('currentUri', $currentUri)
         ;
