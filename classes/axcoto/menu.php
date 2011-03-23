@@ -6,7 +6,8 @@
  */
 
 abstract class Axcoto_Menu {
-    private static  $_configMenu = array();
+
+    private static $_configMenu = array();
     private $_menu = array();
     private $_name = null;
     private static $_instance = array();
@@ -43,7 +44,7 @@ abstract class Axcoto_Menu {
     public static function factory($name) {
         self::$_configMenu = Kohana::config('menu');
         if (empty(self::$_instance[$name])) {
-            self::$_instance[$name] = new Menu($name, empty(self::$_configMenu[$name])?  array():self::$_configMenu[$name]) ;
+            self::$_instance[$name] = new Menu($name, empty(self::$_configMenu[$name]) ? array() : self::$_configMenu[$name]);
         }
         return self::$_instance[$name];
     }
@@ -51,31 +52,63 @@ abstract class Axcoto_Menu {
     /**
      *  Render a menu! We must calculate current menu item at this point because after creating a menu, other menu items can be added to!
      * @param <type> $attr attribute of menu(class, id)
+     *      You can pass before and after to set a text which will wrap around your li element instead default <ul> tag of template! This is
+     *      similar to before. after of wordpress
+     *
      * @return <type> html text of menu
      */
-    public function render($attr=array()) {
+    public function render($attr=array(), $sub=false) {
         $_attr = array(
             'class' => '',
-            'id' => 'menu_' . $this->_name
+            'id' => 'menu_' . $this->_name . ($sub ? '_sub' : ''),
+            'before' => FALSE,
+            'after' => FALSE,
         );
-        
+
         $_attr = Arr::overwrite($_attr, $attr);
 
         $currentUri = Request::current()->uri() . '/';
         $currentUri = Text::reduce_slashes($currentUri);
-        foreach ($this->_menu as $key=>$item) {
+
+        foreach ($this->_menu as $key => $item) {
             $menuUri = Text::reduce_slashes($item['uri'] . '/');
             $menuDefaultUri = Text::reduce_slashes($item['uri'] . '/index/');
-            if ($menuDefaultUri==$currentUri || $menuUri==$currentUri || strpos($currentUri, $menuUri)===0) {
+
+            foreach ($item as $attb => $value) {
+                switch ($attb) {
+                    case 'text': case 'uri': case 'attribute': case 'current':
+                        break;
+                    default:
+                        $this->_menu[$key]['attribute'] = (empty($this->_menu[$key]['attribute']) ? '' : $this->_menu[$key]['attribute']) . ' ' . sprintf('%s="%s"', $attb, ($value));
+                        break;
+                }
+            }
+
+            if ($menuDefaultUri == $currentUri || $menuUri == $currentUri || strpos($currentUri, $menuUri) === 0) {
                 $this->_menu[$key]['current'] = true;
+                $subMenu = empty($this->_menu[$key]['sub']) ? array() : $this->_menu[$key]['sub'];
+
+                $a = function ($item) {
+                            $currentUri = Request::current()->uri() . '/';
+                            $currentUri = Text::reduce_slashes($currentUri);
+
+                            $menuUri = Text::reduce_slashes($item['uri'] . '/');
+                            $menuDefaultUri = Text::reduce_slashes($item['uri'] . '/index/');
+                            if ($menuDefaultUri == $currentUri || $menuUri == $currentUri || strpos($currentUri, $menuUri) === 0) {
+
+                                $item['current'] = true;
+                            }
+                            return $item;
+                        };
+                $subMenu = array_map($a, $subMenu);
             }
         }
 
         $template = View::factory('menu/menu')
-                        ->set('menu', $this->_menu)
+                        ->set('menu', $sub ? $subMenu : $this->_menu)
                         ->set('attr', $_attr)
-                        ->set('currentUri', $currentUri)
-        ;
+                        ->set('currentUri', $currentUri);
+
         return $template->render();
     }
 
