@@ -53,22 +53,14 @@ return array(
                 )
             )
         ),
-        'admin/page' => array(
-            'text' => 'Page',
-            'uri' => 'admin/page',
-            'sub' => array(
-                'admin/page/index' => array(
-                    'text' => 'Listing',
-                ),
-            )
-        ),
+
         'admin/configuration' => array(
             'text' => 'Config',
             'sub' => array(
                 'admin/configuration/setting' => array(
                     'text' => 'Setting',
                 ),
-                'admin/configuration/page' => array(
+                'admin/page' => array(
                     'text' => 'Page',
                 ),
                 'admin/theme' => array(
