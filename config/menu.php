@@ -84,11 +84,11 @@ return array(
         'events' => array(
             'text' => 'Events',
         ),
-        'events' => array(
+        'profile/vote' => array(
             'text' => 'My vote',
             'onclick' => 'return app.loadPage(\'quizz/result\')',
         ),
-        'events' => array(
+        'welcome/invite' => array(
             'text' => 'Invite Friends',
         ),
     ),
