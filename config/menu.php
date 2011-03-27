@@ -6,73 +6,98 @@
  */
 return array(
     'primary' => array(
-        array(
+        'admin/welcome' => array(
             'text' => 'Dashboard',
-            'uri' => 'admin/welcome',
-            'sub' => array(
-            )
         ),
-        array(
+        'admin/statistic' => array(
             'text' => 'Statistic',
-            'uri' => 'admin/statistic'
+            'sub' => array(
+                'admin/statistic/index' => array(
+                    'text' => 'Overview',
+                ),
+                'admin/statistic/member' => array(
+                    'text' => 'Member',
+                ),
+            )
         ),
-        array(
+        'admin/category' => array(
             'text' => 'Category&amp; item',
-            'uri' => 'admin/category',
             'sub' => array(
-                array(
+                'admin/category/index' => array(
                     'text' => 'Listing',
-                    'uri' => 'admin/category/index'
                 ),
-                array(
+                'admin/category/new' => array(
                     'text' => 'New Category',
-                    'uri' => 'admin/category/new'
                 )
             )
         ),
-        array(
+        'admin/campaign' => array(
             'text' => 'Campaign',
-            'uri' => 'admin/campaign',
             'sub' => array(
-                array(
+                'admin/campaign/index' => array(
                     'text' => 'Listing',
-                    'uri' => 'admin/campaign/index'
                 ),
-                array(
+                'admin/campaign/new' => array(
                     'text' => 'New Campaign',
-                    'uri' => 'admin/campaign/new'
                 )
             )
         ),
-        array(
-            'text' => 'Setting',
-            'uri' => 'admin/setting',
+        'admin/event' => array(
+            'text' => 'Event',
+            'sub' => array(
+                'admin/event/index' => array(
+                    'text' => 'Listing',
+                ),
+                'admin/event/open' => array(
+                    'text' => 'New Event',
+                )
+            )
         ),
+        'admin/page' => array(
+            'text' => 'Page',
+            'uri' => 'admin/page',
+            'sub' => array(
+                'admin/page/index' => array(
+                    'text' => 'Listing',
+                ),
+            )
+        ),
+        'admin/configuration' => array(
+            'text' => 'Config',
+            'sub' => array(
+                'admin/configuration/setting' => array(
+                    'text' => 'Setting',
+                ),
+                'admin/configuration/page' => array(
+                    'text' => 'Page',
+                ),
+                'admin/theme' => array(
+                    'text' => 'Theme',
+                ),
+            )
+        ),
+        'admin/wall/post' => array(
+            'text' => 'Wall Post',
+        )
     ),
+
     'footer' => array(
     ),
 
-
     'frontpage-primary' => array(
-        array(
+        'welcome' => array(
             'text' => 'Home',
-            'uri' => 'welcome',
             'onclick' => 'return app.loadPage(\'quizz/index\')'
         ),
-        array(
+        'events' => array(
             'text' => 'Events',
-            'uri' => 'events'
         ),
-        array(
+        'events' => array(
             'text' => 'My vote',
-            'uri' => 'events',
             'onclick' => 'return app.loadPage(\'quizz/result\')',
         ),
-        array(
+        'events' => array(
             'text' => 'Invite Friends',
-            'uri' => 'events',
         ),
     ),
-
-    
 );

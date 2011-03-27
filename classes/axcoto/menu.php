@@ -49,6 +49,10 @@ abstract class Axcoto_Menu {
         return self::$_instance[$name];
     }
 
+    public function isActivedMenu($menu) {
+        //static $rendered =
+    }
+
     /**
      *  Render a menu! We must calculate current menu item at this point because after creating a menu, other menu items can be added to!
      * @param <type> $attr attribute of menu(class, id)
@@ -67,47 +71,53 @@ abstract class Axcoto_Menu {
 
         $_attr = Arr::overwrite($_attr, $attr);
 
-        $currentUri = Request::current()->uri() . '/';
-        $currentUri = Text::reduce_slashes($currentUri);
+        $currentUri = Text::reduce_slashes(Request::current()->uri() . '/');
+        if (substr($currentUri, -6)=='index/') {
+            $currentUriNoIndex = substr($currentUri, 0, strlen($currentUri) - 7 );
+        } else {
+            $currentUriNoIndex = $currentUri;
+        }
+        $subMenu = array();
 
-        foreach ($this->_menu as $key => $item) {
-            $menuUri = Text::reduce_slashes($item['uri'] . '/');
-            $menuDefaultUri = Text::reduce_slashes($item['uri'] . '/index/');
+        foreach ($this->_menu as $uri => $item) {
+            $this->_menu[$uri]['uri'] = $uri;
+            $menuUri = Text::reduce_slashes($this->_menu[$uri]['uri'] . '/');
+            $menuDefaultUri = Text::reduce_slashes($this->_menu[$uri]['uri'] . '/index/');
 
             foreach ($item as $attb => $value) {
                 switch ($attb) {
-                    case 'text': case 'uri': case 'attribute': case 'current':
+                    case 'text': case 'uri': case 'attribute': case 'current': case 'sub':
                         break;
                     default:
-                        $this->_menu[$key]['attribute'] = (empty($this->_menu[$key]['attribute']) ? '' : $this->_menu[$key]['attribute']) . ' ' . sprintf('%s="%s"', $attb, ($value));
+                        $this->_menu[$uri]['attribute'] = (empty($this->_menu[$uri]['attribute']) ? '' : $this->_menu[$uri]['attribute']) . ' ' . sprintf('%s="%s"', $attb, ($value));
                         break;
                 }
             }
 
-            if ($menuDefaultUri == $currentUri || $menuUri == $currentUri || strpos($currentUri, $menuUri) === 0) {
-                $this->_menu[$key]['current'] = true;
-                $subMenu = empty($this->_menu[$key]['sub']) ? array() : $this->_menu[$key]['sub'];
-
-                $a = function ($item) {
+            if (strpos($currentUri, $menuUri) === 0 || (!empty($item['sub']) && (array_key_exists( $currentUri, $item['sub']) || array_key_exists( $currentUriNoIndex, $item['sub'])))) {
+                $this->_menu[$uri]['current'] = true;
+                $subMenu = (empty($this->_menu[$uri]['sub']) ? array() : $this->_menu[$uri]['sub']);
+                $a = function (&$item, $uri, &$menu)  {
+                            $item['uri'] =  $uri;
                             $currentUri = Request::current()->uri() . '/';
                             $currentUri = Text::reduce_slashes($currentUri);
 
                             $menuUri = Text::reduce_slashes($item['uri'] . '/');
                             $menuDefaultUri = Text::reduce_slashes($item['uri'] . '/index/');
-                            if ($menuDefaultUri == $currentUri || $menuUri == $currentUri || strpos($currentUri, $menuUri) === 0) {
-
+                            if (strpos($currentUri, $menuUri) === 0) {
                                 $item['current'] = true;
                             }
-                            return $item;
                         };
-                $subMenu = array_map($a, $subMenu);
+                array_walk($subMenu, $a, $item['sub']);
+
             }
         }
 
+        $menu = !empty($sub) ? $subMenu : $this->_menu;
         $template = View::factory('menu/menu')
-                        ->set('menu', $sub ? $subMenu : $this->_menu)
-                        ->set('attr', $_attr)
-                        ->set('currentUri', $currentUri);
+                        ->bind('menu', $menu)
+                        ->bind('attr', $_attr)
+                        ->bind('currentUri', $currentUri);
 
         return $template->render();
     }
