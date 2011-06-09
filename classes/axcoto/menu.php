@@ -53,6 +53,23 @@ abstract class Axcoto_Menu {
         //static $rendered =
     }
 
+    public function isUriExist($uri, $menu) {
+        if (empty($uri)) {
+            return false;
+        }
+        
+        if (array_key_exists($uri, $menu)) {
+            return true;
+        } elseif (strpos($uri, '/')!==FALSE) {
+            $uri = explode('/', $uri, -1);
+            $uri = implode('/', $uri);
+            return $this->isUriExist($uri, $menu);
+        } else {
+            return false;
+        }
+
+    }
+
     /**
      *  Render a menu! We must calculate current menu item at this point because after creating a menu, other menu items can be added to!
      * @param <type> $attr attribute of menu(class, id)
@@ -72,8 +89,8 @@ abstract class Axcoto_Menu {
         $_attr = Arr::overwrite($_attr, $attr);
 
         $currentUri = Text::reduce_slashes(Request::current()->uri() . '/');
-        if (substr($currentUri, -6)=='index/') {
-            $currentUriNoIndex = substr($currentUri, 0, strlen($currentUri) - 7 );
+        if (substr($currentUri, -6) == 'index/') {
+            $currentUriNoIndex = substr($currentUri, 0, strlen($currentUri) - 7);
         } else {
             $currentUriNoIndex = $currentUri;
         }
@@ -94,26 +111,42 @@ abstract class Axcoto_Menu {
                 }
             }
 
-            if (strpos($currentUri, $menuUri) === 0 || (!empty($item['sub']) && (array_key_exists( $currentUri, $item['sub']) || array_key_exists( $currentUriNoIndex, $item['sub'])))) {
+
+            $detectActivedElement = function (&$item, $uri, &$arr) {
+                        $menu = & $arr[0];
+                        $processMenu = & $arr[1];
+
+                        $item['uri'] = $uri;
+                        $currentUri = Request::current()->uri() . '/';
+                        $currentUri = Text::reduce_slashes($currentUri);
+
+                        $menuUri = Text::reduce_slashes($item['uri'] . '/');
+                        $menuDefaultUri = Text::reduce_slashes($item['uri'] . '/index/');
+                        if (strpos($currentUri, $menuUri) === 0) {
+                            $item['current'] = true;
+                            $processMenu['current'] = true;
+                        } else {
+                            
+                        }
+                    };
+
+            if (strpos($currentUri, $menuUri) === 0 || (!empty($item['sub']) && ($this->isUriExist($currentUri, $item['sub']) || $this->isUriExist($currentUriNoIndex, $item['sub'])))) {
                 $this->_menu[$uri]['current'] = true;
-                $subMenu = (empty($this->_menu[$uri]['sub']) ? array() : $this->_menu[$uri]['sub']);
-                $a = function (&$item, $uri, &$menu)  {
-                            $item['uri'] =  $uri;
-                            $currentUri = Request::current()->uri() . '/';
-                            $currentUri = Text::reduce_slashes($currentUri);
-
-                            $menuUri = Text::reduce_slashes($item['uri'] . '/');
-                            $menuDefaultUri = Text::reduce_slashes($item['uri'] . '/index/');
-                            if (strpos($currentUri, $menuUri) === 0) {
-                                $item['current'] = true;
-                            }
-                        };
-                array_walk($subMenu, $a, $item['sub']);
-
+                if (!empty($item['sub'])) {
+                    $subMenu = (empty($this->_menu[$uri]['sub']) ? array() : $this->_menu[$uri]['sub']);
+                    array_walk($subMenu, $detectActivedElement, array(&$item['sub'], &$this->_menu[$uri]));
+                }
             }
         }
 
+        if ($sub) {
+
+            $menu = $subMenu;
+        } else {
+            $menu = $this->_menu;
+        }
         $menu = !empty($sub) ? $subMenu : $this->_menu;
+
         $template = View::factory('menu/menu')
                         ->bind('menu', $menu)
                         ->bind('attr', $_attr)
