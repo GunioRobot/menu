@@ -7,7 +7,7 @@
 
 class Menu extends Axcoto_Menu {
 
-    
+
 }
 
 ?>

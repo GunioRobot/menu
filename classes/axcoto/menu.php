@@ -57,7 +57,7 @@ abstract class Axcoto_Menu {
         if (empty($uri)) {
             return false;
         }
-        
+
         if (array_key_exists($uri, $menu)) {
             return true;
         } elseif (strpos($uri, '/')!==FALSE) {
@@ -126,7 +126,7 @@ abstract class Axcoto_Menu {
                             $item['current'] = true;
                             $processMenu['current'] = true;
                         } else {
-                            
+
                         }
                     };
 
